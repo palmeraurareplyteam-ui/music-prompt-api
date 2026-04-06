@@ -17,7 +17,7 @@ app.get("/api/music-prompt", async (req, res) => {
         "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: "llama3-8b-8192",
+        model: "llama-3.3-70b-versatile",
         messages: [{
           role: "user",
           content: `You are an expert AI music prompt engineer for Suno and Udio. Generate optimized prompts for the style: "${style}". Return ONLY valid JSON, no markdown, no extra text: {"style":"${style}","suno_prompt":"detailed suno prompt","udio_prompt":"detailed udio prompt","mood":"one word","bpm_range":"e.g. 130-145","key_instruments":["instrument1","instrument2","instrument3"],"best_for":"short use case description"}`
