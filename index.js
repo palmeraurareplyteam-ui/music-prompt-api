@@ -7,7 +7,7 @@ app.use(express.json());
 
 app.get("/api/music-prompt", async (req, res) => {
   const style = req.query.style;
-  if (!style) return res.status(400).json({ error: "Missing ?style= parameter. Try: phonk, lofi, dark trap, hyperpop, cinematic" });
+  if (!style) return res.status(400).json({ error: "Missing ?style= parameter" });
 
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -20,8 +20,7 @@ app.get("/api/music-prompt", async (req, res) => {
         model: "llama3-8b-8192",
         messages: [{
           role: "user",
-          content: `You are an expert AI music prompt engineer for Suno and Udio. Generate optimized prompts for the style: "${style}". Return ONLY valid JSON, no markdown, no extra text:
-{"style":"${style}","suno_prompt":"detailed suno prompt","udio_prompt":"detailed udio prompt","mood":"one word","bpm_range":"e.g. 130-145","key_instruments":["instrument1","instrument2","instrument3"],"best_for":"short use case description"}`
+          content: `You are an expert AI music prompt engineer for Suno and Udio. Generate optimized prompts for the style: "${style}". Return ONLY valid JSON, no markdown, no extra text: {"style":"${style}","suno_prompt":"detailed suno prompt","udio_prompt":"detailed udio prompt","mood":"one word","bpm_range":"e.g. 130-145","key_instruments":["instrument1","instrument2","instrument3"],"best_for":"short use case description"}`
         }],
         temperature: 0.7,
         max_tokens: 1000
@@ -29,13 +28,19 @@ app.get("/api/music-prompt", async (req, res) => {
     });
 
     const data = await response.json();
+    console.log("Groq response:", JSON.stringify(data));
+
+    if (!data.choices || !data.choices[0]) {
+      return res.status(500).json({ error: "Groq error", raw: data });
+    }
+
     const text = data.choices[0].message.content.trim();
     const clean = text.replace(/```json|```/g, "").trim();
     const result = JSON.parse(clean);
     res.json(result);
 
   } catch (err) {
-    res.status(500).json({ error: "Failed to generate prompt", details: err.message });
+    res.status(500).json({ error: "Failed", details: err.message });
   }
 });
 
